@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Index {% endblock %}</h1>
+    <h1>Hello World!</h1>
+    <h2>Welcome to FlaskApp!</h2>
+    {% for result in results %}
+        <div class='result'>
+            <p>Product Name: {{ result['ProductName'] }}</p>
+            <p>Acquired Date: {{ result['AcquiredDate'] }}</p>
+            <p>Console Model: {{ result['ConsoleModel'] }}</p>
+            <p>Board Revision: {{ result['ConsoleBoard'] }}</p>
+            <p>Product Code: {{ result['ProductCode'] }}</p>
+            <p>QR Code: <img src="static/qrcodes/{{ result['ProductCode'] }}.png"></p>
+        </div>
+    {% endfor %}
+{% endblock %}
