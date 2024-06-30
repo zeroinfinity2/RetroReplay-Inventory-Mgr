@@ -66,7 +66,8 @@ def item(itemcode):
     # If request to delete item was made
     if request.form.get("delete"):
         # Delete from the database
-        conn.execute(f"DELETE FROM Products, Consoles WHERE ProductCode = '{code}'")
+        conn.execute(f"DELETE FROM Products WHERE ProductCode = '{code}'")
+        conn.execute(f"DELETE FROM Consoles WHERE ProductCode = '{code}'")
         conn.commit()
         conn.close()
         # Delete the QR code file
@@ -165,5 +166,5 @@ def add_console_type():
 def create_QR(item):
     '''Creates a QR Code for easy access.
     '''
-    qrcode = segno.make(f'http://127.0.0.1:5000/item/{item.product_code}')
+    qrcode = segno.make(f'{item.product_code}')
     qrcode.save(f'./static/qrcodes/{item.product_code}.png', light='lightblue', scale='10')
