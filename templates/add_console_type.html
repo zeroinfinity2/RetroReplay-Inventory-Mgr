@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Add a New Console Type{% endblock %}</h1>
+    <form method="POST" enctype=multipart/form-data>
+        <label for="console_name"><h2>Console Name</h2></label><br>
+        <input type="text" name="console_name" placeholder="3 letter abbreviation" rows="1" cols="15"><br><br>
+
+        <label for="image"><h2>Console Image</h2></label><br>
+        <input type="file" name="image"><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+{% endblock %}

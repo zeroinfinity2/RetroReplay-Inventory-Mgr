@@ -1,5 +1,5 @@
 '''
-    Console class defines a type of console.
+    Console class defines a type of game console.
 '''
 
 from product import Product
@@ -12,7 +12,6 @@ class Console(Product):
         '''
 
         # Sets the name of the system
-
         self.name = name
 
         # Sets the acquire date. Defaults to the current date.
@@ -27,5 +26,5 @@ class Console(Product):
         # Sets a list of mods done the the console
         self.mods = mods
 
-        # Sets the product code
+        # Sets the product code for consoles
         self.product_code = f"{self.name}{self.model}{self.board}{self.acquire_date}"

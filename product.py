@@ -1,12 +1,9 @@
 '''
     The base item class that all others inherit.
 '''
-import itertools
 
 
 class Product():
-
-    id_iter = itertools.count()
 
     def __init__(self):
         """Creates a new Product.
@@ -14,13 +11,13 @@ class Product():
 
     @property
     def name(self):
-        '''Gets the name of the console
+        '''Gets the name of the product
         '''
         return self._name
 
     @name.setter
     def name(self, n):
-        '''Sets the name of the console
+        '''Sets the name of the product
         '''
         self._name = n
 

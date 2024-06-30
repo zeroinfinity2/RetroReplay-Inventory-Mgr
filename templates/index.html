@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} Index {% endblock %}</h1>
-    <h1>Hello World!</h1>
-    <h2>Welcome to FlaskApp!</h2>
-    {% for result in results %}
+    <h1>{% block title %} Home {% endblock %}</h1>
+
+    <h2>Active Products</h2>
         <div class='result'>
-            <p>Product Name: {{ result['ProductName'] }}</p>
-            <p>Acquired Date: {{ result['AcquiredDate'] }}</p>
-            <p>Console Model: {{ result['ConsoleModel'] }}</p>
-            <p>Board Revision: {{ result['ConsoleBoard'] }}</p>
-            <p>Product Code: {{ result['ProductCode'] }}</p>
-            <p>QR Code: <img src="static/qrcodes/{{ result['ProductCode'] }}.png"></p>
+            <h4>Total Consoles: {{ consoles[0] }}</h4>
         </div>
-    {% endfor %}
+        <div class='result'>
+            <br>
+            <h2>Recently added</h2>
+        {% for result in recent %}
+            <a href= "./item/{{ result['ProductCode'] }}">{{ result['ProductCode'] }}</a><br>
+        {% endfor %}
+        </div>
+
 {% endblock %}
