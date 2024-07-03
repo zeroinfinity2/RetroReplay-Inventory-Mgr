@@ -3,15 +3,11 @@
 {% block content %}
     <h1>{% block title %} Add Console Stock {% endblock %}</h1>
     <form method="POST">
-        <label for="name"><h2>System Name</h2></label>
+        <label for="name"><h2>Console Code</h2></label>
         <br>
-        <input type="radio" id="PSX" name="nameoptions" value="PSX" checked="checked"> Playstation </input><br>
-        <input type="radio" id="SAT" name="nameoptions" value="SAT"> Sega Saturn </input><br>
-        <input type="radio" id="GEN" name="nameoptions" value="GEN"> Sega Genesis </input><br>
-        <input type="radio" id="N64" name="nameoptions" value="N64"> N64 </input><br>
-        <input type="radio" id="SFC" name="nameoptions" value="SFC"> SNES </input><br>
-        <input type="radio" id="NES" name="nameoptions" value="NES"> NES </input><br>
-        <input type="radio" id="GB" name="nameoptions" value="GB"> Game Boy </input><br>
+        {% for console_name in console_names %}
+        <input type="radio" id="{{ console_name['ConsoleCode'] }}" name="nameoptions" value="{{ console_name['ConsoleCode'] }}"> {{ console_name['ConsoleName'] }} </input><br>
+        {% endfor %}
         <br>
 
         <label for="model"><h2>Model</h2></label><br>
@@ -22,6 +18,9 @@
 
         <label for="mods"><h2>Mods Installed</h2></label><br>
         <textarea name="mods" placeholder="Mods Installed. Leave blank if stock." rows="5" cols="30">{{ request.form['mods'] }}</textarea><br>
+
+        <label for="cost"><h2>Product Cost</h2></label><br>
+        <input type="text" name="cost" placeholder="Dollar amount..." rows="1" cols="15"><br><br>
         
         <br>
         <button type="submit">Submit</button>

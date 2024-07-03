@@ -8,9 +8,10 @@
                 <p>No results found.</p>
             {% else %}
             <p><img src="{{ url_for('static', filename='/qrcodes/') }}{{ result[0]['ProductCode']}}.png">
-            <img src="{{ url_for('static', filename='/images/') }}{{ result[0]['ProductName']}}.png" class="img-responsive" style="width:500px"></p>
+            <img src="{{ url_for('static', filename='/images/') }}{{ result[0]['ImgFile'] }}" class="img-responsive" style="width:500px"></p>
+            <p>Product Type: {{ result[0]['ProductType'] }}</p>
             <p>Product Name: {{ result[0]['ProductName'] }}</p>
-            <p>Acquired Date: {{ result[0]['AcquiredDate'] }}</p>
+            <p>Acquired Date: {{ result[0]['InDate'] }}</p>
             <p>Console Model: {{ result[0]['ConsoleModel'] }}</p>
             <p>Board Revision: {{ result[0]['ConsoleBoard'] }}</p>
             <p>Product Code: {{ result[0]['ProductCode'] }}</p>

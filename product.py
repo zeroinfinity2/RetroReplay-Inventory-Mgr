@@ -10,16 +10,16 @@ class Product():
         """
 
     @property
-    def name(self):
+    def code(self):
         '''Gets the name of the product
         '''
-        return self._name
+        return self._code
 
-    @name.setter
-    def name(self, n):
+    @code.setter
+    def code(self, c):
         '''Sets the name of the product
         '''
-        self._name = n
+        self._code = c
 
     @property
     def date(self):

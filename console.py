@@ -7,12 +7,12 @@ import datetime
 
 
 class Console(Product):
-    def __init__(self, name, model, board, mods, a_date=datetime.datetime.now().strftime("%m%d%Y%H%M%S")):
+    def __init__(self, code, model, board, mods, a_date=datetime.datetime.now().strftime("%m%d%Y%H%M%S")):
         '''Defines a Console product.
         '''
 
-        # Sets the name of the system
-        self.name = name
+        # Sets the console code
+        self.code = code
 
         # Sets the acquire date. Defaults to the current date.
         self.acquire_date = a_date
@@ -27,4 +27,4 @@ class Console(Product):
         self.mods = mods
 
         # Sets the product code for consoles
-        self.product_code = f"{self.name}{self.model}{self.board}{self.acquire_date}"
+        self.product_code = f"{self.code}{self.model}{self.board}{self.acquire_date}"

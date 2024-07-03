@@ -1,15 +1,19 @@
 DROP TABLE IF EXISTS Products;
 DROP TABLE IF EXISTS Consoles;
+DROP TABLE IF EXISTS GeneralGoods;
 DROP TABLE IF EXISTS ConsoleTypes;
-DROP TABLE IF EXISTS MerchTypes;
 
 
 CREATE TABLE Products (
     ProductID INTEGER PRIMARY KEY AUTOINCREMENT,
     ProductName VARCHAR(255) NOT NULL,
-    AcquiredDate VARCHAR(8) NOT NULL,
-    ProductCode VARCHAR(255),
-    ProductSold int NOT NULL DEFAULT 0
+    ProductIdentifier VARCHAR(5) NOT NULL UNIQUE,
+    InDate INTEGER NOT NULL UNIQUE,
+    ProductType INTEGER NOT NULL,
+    ProductSold BOOLEAN NOT NULL DEFAULT 0,
+    ProductCost DECIMAL(8, 2) NOT NULL,
+    ProductPrice DECIMAL(8, 2),
+    ProductCode VARCHAR(255)
 );
 
 CREATE TABLE Consoles (
@@ -18,20 +22,28 @@ CREATE TABLE Consoles (
     ConsoleModel VARCHAR(3) NOT NULL,
     ConsoleBoard VARCHAR(255) NOT NULL,
     ProductCode VARCHAR(255),
+    ConsoleCode VARCHAR(255),
+    FOREIGN KEY (ProductCode) REFERENCES 
+    Products(ProductCode),
+    FOREIGN KEY (ConsoleCode) REFERENCES
+    Products(ProductIdentifier)
+);
+
+CREATE TABLE GeneralGoods (
+    ItemID INTEGER PRIMARY KEY AUTOINCREMENT,
+    ProductCode VARCHAR(255),
+    ItemStock INTEGER NOT NULL DEFAULT 0,
+    ImgFile VARCHAR(255) NOT NULL,
     FOREIGN KEY (ProductCode) REFERENCES 
     Products(ProductCode)
 );
 
 CREATE TABLE ConsoleTypes (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    TypeName VARCHAR(255) NOT NULL,
+    ConsoleCode VARCHAR(10) PRIMARY KEY,
+    ConsoleName VARCHAR(255) NOT NULL,
     ImgFile VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE MerchTypes (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    TypeName VARCHAR(255) NOT NULL
-);
-
-INSERT INTO ConsoleTypes (TypeName, ImgFile)
-VALUES ('PSX', 'PSX.png'), ('SAT', 'SAT.png'), ('GEN', 'GEN.png'), ('N64', 'N64.png'), ('SFC', 'SFC.png'), ('NES', 'NES.png'), ('GB', 'GB.png');
+INSERT INTO ConsoleTypes (ConsoleCode, ConsoleName, ImgFile)
+VALUES ('PSX', 'Playstation', 'PSX.png'), ('SAT', 'Sega Saturn', 'SAT.png'), ('GEN', 'Sega Genesis', 
+'GEN.png'), ('N64', 'Nintendo 64', 'N64.png'), ('SFC', 'Super Nintendo', 'SFC.png'), ('NES', 'NES', 'NES.png'), ('GB', 'Game Boy', 'GB.png');
