@@ -1,27 +1,12 @@
 import segno
-from flask import Flask, render_template, request, url_for, flash, redirect
+from flask import render_template, request, url_for, flash, redirect
 from markupsafe import escape
 import os
 from werkzeug.utils import secure_filename
 import datetime
-from models import db, Product, Console, Goods, ConsoleType
+from .models import Product, Console, Goods, ConsoleType
 from sqlalchemy import func
-
-
-# Initialization --------------------------------------
-UPLOAD_FOLDER = './static/images'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-app = Flask(__name__)
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{app.root_path}/inventory.db"
-app.config['SQLALCHEMY_ECHO'] = True
-
-db.init_app(app)
-with app.app_context():
-    db.create_all()
-# ------------------------------------------------------
+from . import db, app
 
 
 def create_product_code(product_code, product_type, indate):
@@ -38,7 +23,7 @@ def create_QR(product_code):
 
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.')[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.')[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
 
 @app.route("/")

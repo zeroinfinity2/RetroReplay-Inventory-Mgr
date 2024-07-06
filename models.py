@@ -1,15 +1,12 @@
 ''' Defines the models to be used for the app.
 '''
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from . import db
 
 
 class Base(DeclarativeBase):
     pass
-
-
-db = SQLAlchemy()
 
 
 class Product(db.Model):
