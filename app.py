@@ -13,7 +13,7 @@ UPLOAD_FOLDER = './static/images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '1d5db266e7902199cc6cb39e6511cd81ccd9da827fa9deaf'
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{app.root_path}/inventory.db"
 app.config['SQLALCHEMY_ECHO'] = True
