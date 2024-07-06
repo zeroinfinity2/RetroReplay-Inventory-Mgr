@@ -6,7 +6,7 @@
         <label for="name"><h2>Console Code</h2></label>
         <br>
         {% for console_name in console_names %}
-        <input type="radio" id="{{ console_name['ConsoleCode'] }}" name="nameoptions" value="{{ console_name['ConsoleCode'] }}"> {{ console_name['ConsoleName'] }} </input><br>
+        <input type="radio" id="{{ console_name.code_name }}" name="nameoptions" value="{{ console_name.code_name }}"> {{ console_name.full_name }} </input><br>
         {% endfor %}
         <br>
 

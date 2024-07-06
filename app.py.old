@@ -1,40 +1,26 @@
 import segno
 from flask import Flask, render_template, request, url_for, flash, redirect
 from markupsafe import escape
+import sqlite3
 import os
 from werkzeug.utils import secure_filename
 import datetime
-from models import db, Product, Console, Goods, ConsoleType
-from sqlalchemy import func
 
-
-# Initialization --------------------------------------
+# IMPORTANT STUFF --------------------------------------
 UPLOAD_FOLDER = './static/images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '1d5db266e7902199cc6cb39e6511cd81ccd9da827fa9deaf'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{app.root_path}/inventory.db"
-app.config['SQLALCHEMY_ECHO'] = True
 
-db.init_app(app)
-with app.app_context():
-    db.create_all()
 # ------------------------------------------------------
 
 
-def create_product_code(product_code, product_type, indate):
-    """Creates product codes based on the unique info.
-    """
-    return f"{product_code}{product_type}{indate}"
-
-
-def create_QR(product_code):
-    '''Creates a QR Code for easy access.
-    '''
-    qrcode = segno.make(f'{product_code}')
-    qrcode.save(f'./static/qrcodes/{product_code}.png', light='lightblue', scale='10')
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def allowed_file(filename):
@@ -43,26 +29,29 @@ def allowed_file(filename):
 
 @app.route("/")
 def index():
+    conn = get_db_connection()
     # Grab the console counts
-    console_count = db.session.execute(db.select(func.count()).select_from(Product).join(Console, Product.product_code == Console.product_code)).scalar_one()
+    consoles = conn.execute('SELECT COUNT(*) FROM Products INNER JOIN Consoles ON Products.ProductCode = Consoles.ProductCode').fetchone()
     # Grab recents added items
-    recent_added = db.session.execute(db.select(Product).order_by(Product.product_code).limit(10)).scalars()
-    return render_template('index.html', consoles=console_count, recent=recent_added)
+    recent_added = conn.execute('SELECT * FROM Products ORDER BY Products.ProductID DESC LIMIT 5').fetchall()
+    conn.close()
+    return render_template('index.html', consoles=consoles, recent=recent_added)
 
 
 @app.route('/item/<itemcode>', methods=('GET', 'POST'))
 def item(itemcode):
     code = f'{escape(itemcode)}'
+    # Establish a connection
+    conn = get_db_connection()
 
     # If the item sold returns the proper value (1)
     if request.form.get("itemsold"):
         # Get the sale status.
-        sale_status = bool(request.form['itemsold'])
+        sale_status = request.form['itemsold']
 
-        # Select the item and update it's sales status, and commit to the database.
-        updated_product = db.session.execute(db.select(Product).where(Product.product_code == f"{code}")).scalar_one()
-        updated_product.is_sold = sale_status
-        db.session.commit()
+        # Connect to the DB and save the changes.
+        conn.execute(f"UPDATE Products SET ProductSold = {sale_status} WHERE ProductCode = '{code}'")
+        conn.commit()
         flash("Item marked as sold.")
 
     # If modifications were made to mods
@@ -70,22 +59,17 @@ def item(itemcode):
         # Get the mods changes
         mods = request.form['mods']
 
-        # Grab the product and update it's mods, and commit to the database.
-        updated_product = db.session.execute(db.select(Console).where(Console.product_code == f"{code}")).scalar_one()
-        updated_product.mods = mods
-        db.session.commit()
-        flash("Item updated successfully.")
+        # Connect to the DB and save the changes.
+        conn.execute(f"UPDATE Consoles SET ConsoleMods = '{mods}' WHERE ProductCode = '{code}'")
+        conn.commit()
 
     # If request to delete item was made
     if request.form.get("delete"):
         # Delete from the database
-        product = db.session.execute(db.select(Product).where(Product.product_code == f"{code}")).scalar_one()
-        console = db.session.execute(db.select(Console).where(Console.product_code == f"{code}")).scalar_one()
-
-        db.session.delete(console)
-        db.session.delete(product)
-        db.session.commit()
-
+        conn.execute(f"DELETE FROM Products WHERE ProductCode = '{code}'")
+        conn.execute(f"DELETE FROM Consoles WHERE ProductCode = '{code}'")
+        conn.commit()
+        conn.close()
         # Delete the QR code file
         if os.path.exists(f"static/qrcodes/{code}.png"):
             os.remove(f"static/qrcodes/{code}.png")
@@ -96,14 +80,18 @@ def item(itemcode):
     # Show the item
 
     # Find the result if it exists.
-    result = db.session.execute(db.select(Product, Console).join(Console, Product.product_code == Console.product_code).where(Console.product_code == f"{code}"))
+    # FIXME: This only searches for consoles. Update this to search all products.
+    result = conn.execute(f"SELECT * FROM Products LEFT JOIN Consoles ON Products.ProductCode = Consoles.ProductCode WHERE Consoles.ProductCode = '{code}'").fetchall()
+    conn.close()
     return render_template('item.html', result=result)
 
 
 @app.route('/addconsole/', methods=('GET', 'POST'))
 def addconsole():
+    conn = get_db_connection()
     # Grab all of the console codes
-    consoles = db.session.execute(db.select(ConsoleType)).scalars()
+    consoles = conn.execute('SELECT * FROM ConsoleTypes').fetchall()
+    conn.close()
 
     if request.method == 'POST':
         console_code = request.form['nameoptions']
@@ -130,10 +118,10 @@ def addconsole():
         elif not cost:
             flash('Cost is required. Type 0 for free.')
         else:
-            # If a console is being added, find the console's fullname
+            # If a console is being added, find the console's name and image based on the selected console code
             for console in consoles:
-                if console.code_name == console_code:
-                    console_name = console.full_name
+                if console['ConsoleCode'] == console_code:
+                    console_name = console['ConsoleName']
 
             # Generate the in-date
             sys_indate = datetime.datetime.now().strftime("%m%d%Y%H%M%S")
@@ -144,31 +132,14 @@ def addconsole():
             # Create the QR Code
             create_QR(product_code)
 
-            # Create the product
-            new_product = Product(
-                name=console_name,
-                code_name=console_code,
-                in_date=sys_indate,
-                type_of=product_type,
-                is_sold=0,
-                cost=float(cost),
-                price=float(0.0),
-                product_code=product_code
-            )
-
-            # Create the Console
-            new_console = Console(
-                mods=console_mods,
-                model=console_model,
-                board=console_board,
-                product_code=product_code,
-                code_name=console_code
-            )
-
-            # Add the new product and commit.
-            db.session.add(new_product)
-            db.session.add(new_console)
-            db.session.commit()
+            conn = get_db_connection()
+            conn.execute('INSERT INTO Products (ProductName, ProductIdentifier, Indate, ProductType, ProductCost, ProductCode) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                         (console_name, console_code, sys_indate, product_type, cost, product_code))
+            conn.commit()
+            conn.execute('INSERT INTO Consoles (ConsoleMods, ConsoleModel, ConsoleBoard, ProductCode, ConsoleCode) VALUES (?, ?, ?, ?, ?)',
+                         (console_mods, console_model, console_board, product_code, console_code))
+            conn.commit()
+            conn.close()
             return redirect(url_for('index'))
 
     return render_template('addconsole.html', console_names=consoles)
@@ -202,27 +173,35 @@ def add_console_type():
             filename = secure_filename(file.filename)
 
             # Before saving the file, make sure there is valid name input
-            console_name = request.form['console_name']
+            name = request.form['console_name']
             console_code = request.form['console_code']
 
-            if not console_name:
+            if not name:
                 flash('Name is required!')
             else:
                 # Rename the filename to the codename of the console "CODE.PNG"
                 filename = f"{console_code}.{filename.rsplit('.')[1].lower()}"
 
                 # Add the new console type and save the image
-                new_console_type = ConsoleType(
-                    code_name=console_code,
-                    full_name=console_name,
-                    img_src=filename
-                )
-
-                db.session.add(new_console_type)
-                db.session.commit()
-
+                conn = get_db_connection()
+                conn.execute(f"INSERT INTO ConsoleTypes (ConsoleName, ImgFile, ConsoleCode) VALUES ('{name}', '{filename}', '{console_code}')")
+                conn.commit()
+                conn.close()
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                flash(f'Console {console_name} successfully added.')
+                flash(f'Console {name} successfully added.')
             return redirect(request.url)
 
     return render_template('add_console_type.html')
+
+
+def create_product_code(product_code, product_type, indate):
+    """Creates product codes based on the unique info.
+    """
+    return f"{product_code}{product_type}{indate}"
+
+
+def create_QR(product_code):
+    '''Creates a QR Code for easy access.
+    '''
+    qrcode = segno.make(f'{product_code}')
+    qrcode.save(f'./static/qrcodes/{product_code}.png', light='lightblue', scale='10')

@@ -4,19 +4,20 @@
     <h1>{% block title %} Item View {% endblock %}</h1>
     <h2>Item Details</h2>
         <div class='result'>
-            {% if result|length <= 0 %}
+            {% if not result %}
                 <p>No results found.</p>
             {% else %}
-            <p><img src="{{ url_for('static', filename='/qrcodes/') }}{{ result[0]['ProductCode']}}.png">
-            <img src="{{ url_for('static', filename='/images/') }}{{ result[0]['ImgFile'] }}" class="img-responsive" style="width:500px"></p>
-            <p>Product Type: {{ result[0]['ProductType'] }}</p>
-            <p>Product Name: {{ result[0]['ProductName'] }}</p>
-            <p>Acquired Date: {{ result[0]['InDate'] }}</p>
-            <p>Console Model: {{ result[0]['ConsoleModel'] }}</p>
-            <p>Board Revision: {{ result[0]['ConsoleBoard'] }}</p>
-            <p>Product Code: {{ result[0]['ProductCode'] }}</p>
-            <p>Mods Installed: {{ result[0]['ConsoleMods'] }}</p>
-            {% if result[0]['ProductSold'] == 0 %}
+            {% for item in result %}
+            <p><img src="{{ url_for('static', filename='/qrcodes/') }}{{ item.Product.product_code }}.png">
+            <img src="{{ url_for('static', filename='/images/') }}{{ item.Product.code_name }}.png" class="img-responsive" style="width:500px"></p>
+            <p>Product Type: {{ item.Product.type_of }}</p>
+            <p>Product Name: {{ item.Product.name }}</p>
+            <p>Acquired Date: {{ item.Product.in_date }}</p>
+            <p>Console Model: {{ item.Console.model }}</p>
+            <p>Board Revision: {{ item.Console.board }}</p>
+            <p>Product Code: {{ item.Product.product_code }}</p>
+            <p>Mods Installed: {{ item.Console.mods }}</p>
+            {% if item.Product.is_sold == 0 %}
             <p>Product available for sale</p>
             {% else %}
             <p>Product sold.</p>
@@ -25,7 +26,7 @@
         <div class="tools">
             <form method="POST">
             <h4>Tools</h4>
-            {% if result[0]['ProductSold'] == 0 %}
+            {% if item.Product.is_sold == 0 %}
             <div class="checkbox">
                 <label>
                     <input type="checkbox" value="1" name="itemsold">
@@ -44,15 +45,15 @@
             <br>
             <div>
                 <h5>Add Mods</h5>
-                {% if result[0]['ProductSold'] == 0 %}
-                <textarea name="mods" rows="5" cols="30">{{ result[0]['ConsoleMods'] }}</textarea><br>
+                {% if item.Product.is_sold == 0 %}
+                <textarea name="mods" rows="5" cols="30">{{ item.Console.mods }}</textarea><br>
                 {% else %}
-                <textarea name="mods" rows="5" cols="30" disabled>{{ result[0]['ConsoleMods'] }}</textarea><br>
+                <textarea name="mods" rows="5" cols="30" disabled>{{ item.Console.mods }}</textarea><br>
                 {% endif %}
             </div>
 
             <br>
-            {% if result[0]['ProductSold'] == 0 %}
+            {% if item.Product.is_sold == 0 %}
             <button type="submit">Save Changes</button>
             {% else %}
             <button type="submit" disabled>Save Changes</button>
@@ -60,5 +61,6 @@
             <input type="submit" value="Delete Item" name="delete">
         </form>
         </div>
+        {% endfor %}
         {% endif %}
 {% endblock %}
