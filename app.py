@@ -5,7 +5,7 @@ import os
 from werkzeug.utils import secure_filename
 import datetime
 from .models import Product, Console, Goods, ConsoleType
-from sqlalchemy import func
+from sqlalchemy import func, select
 from . import db, app
 
 
@@ -19,7 +19,7 @@ def create_QR(product_code):
     '''Creates a QR Code for easy access.
     '''
     qrcode = segno.make(f'{product_code}')
-    qrcode.save(f'./static/qrcodes/{product_code}.png', light='lightblue', scale='10')
+    qrcode.save(f'{app.config["UPLOAD_FOLDER"]}/qrcodes/{product_code}.png', light='lightblue', scale='10')
 
 
 def allowed_file(filename):
@@ -39,7 +39,7 @@ def index():
 def item(itemcode):
     code = f'{escape(itemcode)}'
 
-    # If the item sold returns the proper value (1)
+    # If the item sold returns the proper value
     if request.form.get("itemsold"):
         # Get the sale status.
         sale_status = bool(request.form['itemsold'])
@@ -72,8 +72,9 @@ def item(itemcode):
         db.session.commit()
 
         # Delete the QR code file
-        if os.path.exists(f"static/qrcodes/{code}.png"):
-            os.remove(f"static/qrcodes/{code}.png")
+        if os.path.exists(f"{app.config['UPLOAD_FOLDER']}/qrcodes/{code}.png"):
+            os.remove(f"{app.config['UPLOAD_FOLDER']}/qrcodes/{code}.png")
+        
         # Go back to index after delete
         flash("Item successfully removed from the database.")
         return redirect(url_for('index'))
@@ -81,7 +82,7 @@ def item(itemcode):
     # Show the item
 
     # Find the result if it exists.
-    result = db.session.execute(db.select(Product, Console).join(Console, Product.product_code == Console.product_code).where(Console.product_code == f"{code}"))
+    result = db.session.execute(db.select(Product, Console, func.count()).join(Console, Product.product_code == Console.product_code).where(Console.product_code == f"{code}"))
     return render_template('item.html', result=result)
 
 
@@ -206,7 +207,7 @@ def add_console_type():
                 db.session.add(new_console_type)
                 db.session.commit()
 
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                file.save(os.path.join(f"{app.config['UPLOAD_FOLDER']}/images", filename))
                 flash(f'Console {console_name} successfully added.')
             return redirect(request.url)
 

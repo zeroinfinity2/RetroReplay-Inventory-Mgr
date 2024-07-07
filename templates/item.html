@@ -4,10 +4,10 @@
     <h1>{% block title %} Item View {% endblock %}</h1>
     <h2>Item Details</h2>
         <div class='result'>
-            {% if not result %}
+            {% for item in result %}
+            {% if not item.Product %}
                 <p>No results found.</p>
             {% else %}
-            {% for item in result %}
             <p><img src="{{ url_for('static', filename='/qrcodes/') }}{{ item.Product.product_code }}.png">
             <img src="{{ url_for('static', filename='/images/') }}{{ item.Product.code_name }}.png" class="img-responsive" style="width:500px"></p>
             <p>Product Type: {{ item.Product.type_of }}</p>
@@ -61,6 +61,7 @@
             <input type="submit" value="Delete Item" name="delete">
         </form>
         </div>
-        {% endfor %}
+        
         {% endif %}
+        {% endfor %}
 {% endblock %}
