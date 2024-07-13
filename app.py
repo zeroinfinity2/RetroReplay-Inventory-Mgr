@@ -5,7 +5,7 @@ import os
 from werkzeug.utils import secure_filename
 import datetime
 from .models import Product, Console, Goods, ConsoleType
-from sqlalchemy import func, select
+from sqlalchemy import func
 from . import db, app
 
 
@@ -74,7 +74,7 @@ def item(itemcode):
         # Delete the QR code file
         if os.path.exists(f"{app.config['UPLOAD_FOLDER']}/qrcodes/{code}.png"):
             os.remove(f"{app.config['UPLOAD_FOLDER']}/qrcodes/{code}.png")
-        
+
         # Go back to index after delete
         flash("Item successfully removed from the database.")
         return redirect(url_for('index'))
